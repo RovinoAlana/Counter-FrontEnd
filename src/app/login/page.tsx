@@ -1,5 +1,7 @@
 "use server";
 
+import LoginForm from "@/components/organisms/LoginForm";
+
 export default async function LoginPage() {
-  return "Login Page";
+  return <LoginForm />;
 }
