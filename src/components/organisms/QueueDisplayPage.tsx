@@ -1,44 +1,17 @@
+"use client";
 import React from "react";
 import Card from "../atoms/Card";
 import { ICurrentQueuesResponse } from "@/interfaces/services/queue.interface";
 import CurrentQueueDisplay from "../molecules/CurrentQueueDisplay";
+import { useGetCurrentQueues } from "@/services/queue/wrapper.service";
 
 interface QueueDisplayBoardProps {
   className?: string;
 }
 
-const counters: ICurrentQueuesResponse[] = [
-  {
-    id: 1,
-    isActive: true,
-    name: "Counter 1",
-    currentQueue: 5,
-    status: "CLAIMED",
-  },
-  {
-    id: 2,
-    isActive: true,
-    name: "Counter 2",
-    currentQueue: 8,
-    status: "CALLED",
-  },
-  {
-    id: 3,
-    isActive: false,
-    name: "Counter 3",
-    currentQueue: 0,
-    status: "RELEASED",
-  },
-  {
-    id: 4,
-    isActive: true,
-    name: "Counter 4",
-    currentQueue: 12,
-    status: "SERVED",
-  },
-];
-
 const QueueDisplayPage: React.FC<QueueDisplayBoardProps> = ({ className }) => {
+  const { data: currentQueues } = useGetCurrentQueues();
+
   return (
     <div className={className}>
       <Card className="mb-6">
@@ -51,7 +24,7 @@ const QueueDisplayPage: React.FC<QueueDisplayBoardProps> = ({ className }) => {
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {counters
+        {(currentQueues?.data || [])
           .filter(
             (counter: ICurrentQueuesResponse) => counter?.isActive === true
           )
@@ -66,7 +39,7 @@ const QueueDisplayPage: React.FC<QueueDisplayBoardProps> = ({ className }) => {
             );
           })}
 
-        {counters.filter(
+        {(currentQueues?.data || []).filter(
           (counter: ICurrentQueuesResponse) => counter?.isActive === true
         ).length === 0 && (
           <div className="col-span-full text-center py-10 text-gray-500">

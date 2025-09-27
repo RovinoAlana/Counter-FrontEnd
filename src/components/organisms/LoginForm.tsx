@@ -6,7 +6,6 @@ import { ILoginSchema, VLoginSchema } from "@/schemas/auth.schema";
 import { useLoginUser } from "@/services/auth/wrapper.service";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 export default function LoginForm() {

@@ -36,7 +36,7 @@ satellite.interceptors.response.use(
     return response;
   },
   async function (error) {
-    console.log("error in main", error.response.data);
+    console.log("error in main", error.response);
     return tokenInterceptor(error);
   }
 );

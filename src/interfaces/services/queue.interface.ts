@@ -16,7 +16,7 @@ export interface ICurrentQueuesResponse {
 
 export interface IQueue {
   id: number;
-  queueNumber: string;
+  queueNumber: number;
   status: EQueueStatus;
   counter?: {
     id: number;
@@ -27,11 +27,11 @@ export interface IQueue {
 }
 
 export interface IClaimQueueResponse {
-  queueNumber: string;
-  queueId: number;
+  queueNumber: number;
+  counterName: string;
+  counterId: number;
   estimatedWaitTime: number;
-  position: number;
-  createdAt: string;
+  positionInQueue: number;
 }
 
 export interface IGetQueueMetricsResponse {
@@ -42,7 +42,7 @@ export interface IGetQueueMetricsResponse {
 }
 
 export interface IReleaseQueueRequest {
-  queue_number: string;
+  queue_number: number;
   counter_id: number;
 }
 
