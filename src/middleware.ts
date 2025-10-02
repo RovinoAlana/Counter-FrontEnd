@@ -20,9 +20,9 @@ export const middleware: NextMiddleware = async (request: NextRequest) => {
     return response.redirect(new URL("/login", request.url));
   }
 
-  if (path === "/login" && token) {
-    return response.redirect(new URL("/", request.url));
-  }
+  // if (path === "/login" && token) {
+  //   return response.redirect(new URL("/", request.url));
+  // }
 
   const next = response.next();
   return next;

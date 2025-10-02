@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 import { satellite } from "@/config/api.config";
 import { APIBaseResponse } from "@/interfaces/api.interface";

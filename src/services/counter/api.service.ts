@@ -73,5 +73,3 @@ export const apiDeleteCounter = async (id:number) => {
         return errorMessage<{ success: boolean }>(error);
     }
 };
-
-
