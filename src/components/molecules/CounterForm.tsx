@@ -69,17 +69,17 @@ const CounterForm: React.FC<CounterFormProps> = ({
       />
 
       <Controller
-        control={control}
-        name="is_active"
-        render={({ field: { onChange, value, ref } }) => (
-          <Switch
-            label="Status Counter"
-            description="Counter akan aktif dan dapat digunakan"
-            checked={value}
-            onChange={onChange}
-          />
-        )}
-      />
+  name="is_active"
+  control={control}
+  render={({ field }) => (
+    <Switch
+      label="Status Counter"
+      description="Counter akan aktif dan dapat digunakan"
+      checked={field.value}
+      onChange={field.onChange}
+    />
+  )}
+/>
 
       <div className="flex justify-end pt-4">
         <Button type="submit" isLoading={isLoading} disabled={isLoading}>

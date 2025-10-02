@@ -9,6 +9,7 @@ import Button from "../atoms/Button";
 import Card from "../atoms/Card";
 import CounterCard from "../molecules/CounterCard";
 import CounterForm from "../molecules/CounterForm";
+import { useGetAllCounters, useCreateCounter, useUpdateCounter, useDeleteCounter } from "@/services/counter/wrapper.service";
 
 interface CounterManagerProps {
   className?: string;
@@ -19,17 +20,70 @@ const CounterManager: React.FC<CounterManagerProps> = ({ className }) => {
   const [editingCounter, setEditingCounter] = useState<ICounter | null>(null);
   const [selectedCounter, setSelectedCounter] = useState<ICounter | null>(null);
 
-  const counters: ICounter[] = [];
+  const {
+    data: counterResponse,
+    isLoading,
+    refetch: refetchCounter,
+  } = useGetAllCounters();
 
-  const handleSubmit = (
+  // Tambahkan mutation hooks
+  const createCounterMutation = useCreateCounter();
+  const updateCounterMutation = useUpdateCounter();
+  const deleteCounterMutation = useDeleteCounter();
+
+  // Akses data counters dari response API
+  const counters = counterResponse?.data || [];
+
+  const handleSubmit = async (
     data: ICreateCounterRequest | IUpdateCounterRequest
-  ) => {};
+  ) => {
+    try {
+      if (editingCounter) {
+        // Update counter yang sudah ada
+        await updateCounterMutation.mutateAsync({
+          id: editingCounter.id,
+          ...data
+        });
+      } else {
+        // Buat counter baru
+        await createCounterMutation.mutateAsync(data as ICreateCounterRequest);
+      }
 
-  const handleCounterClick = (counter: ICounter) => {};
+      // Reset state dan refresh data
+      setIsAddingCounter(false);
+      setEditingCounter(null);
+      setSelectedCounter(null);
+      refetchCounter(); // Refresh data dari server
+    } catch (error) {
+      console.error("Error submitting counter:", error);
+      // Di sini Anda bisa menambahkan notifikasi error ke user
+    }
+  };
 
-  const handleEditCounter = () => {};
+  const handleCounterClick = (counter: ICounter) => {
+    setSelectedCounter(selectedCounter?.id === counter.id ? null : counter);
+  };
 
-  const handleDeleteCounter = () => {};
+  const handleEditCounter = () => {
+    if (selectedCounter) {
+      setEditingCounter(selectedCounter);
+      setSelectedCounter(null);
+    }
+  };
+
+  const handleDeleteCounter = async () => {
+    if (selectedCounter) {
+      if (confirm(`Apakah Anda yakin ingin menghapus counter ${selectedCounter.name}?`)) {
+        try {
+          await deleteCounterMutation.mutateAsync(selectedCounter.id);
+          setSelectedCounter(null);
+          refetchCounter(); // Refresh data setelah delete
+        } catch (error) {
+          console.error("Error deleting counter:", error);
+        }
+      }
+    }
+  };
 
   return (
     <div className={className}>
@@ -60,7 +114,7 @@ const CounterManager: React.FC<CounterManagerProps> = ({ className }) => {
           <CounterForm
             counter={editingCounter || undefined}
             onSubmit={handleSubmit}
-            isLoading={false}
+            isLoading={createCounterMutation.isPending || updateCounterMutation.isPending}
             isEditMode={!!editingCounter}
           />
           <div className="flex justify-end mt-4">
@@ -91,7 +145,7 @@ const CounterManager: React.FC<CounterManagerProps> = ({ className }) => {
               <Button
                 variant="danger"
                 onClick={handleDeleteCounter}
-                isLoading={false}
+                isLoading={deleteCounterMutation.isPending}
                 leftIcon={
                   <span className="material-symbols-outlined">delete</span>
                 }
@@ -101,21 +155,27 @@ const CounterManager: React.FC<CounterManagerProps> = ({ className }) => {
             </div>
           )}
 
-          {counters.length > 0 ? (
+          {isLoading ? (
+            <Card variant="outline" className="text-center py-8">
+              <div className="flex justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              </div>
+              <p className="text-gray-500 mt-2">Memuat data counter...</p>
+            </Card>
+          ) : counters.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {counters.map((counter) => (
                 <CounterCard
                   key={counter.id}
                   counter={counter}
                   isSelected={selectedCounter?.id === counter.id}
-                  onClick={handleCounterClick}
+                  onClick={() => handleCounterClick(counter)}
                 />
               ))}
             </div>
           ) : (
             <Card variant="outline" className="text-center py-8 text-gray-500">
-              Belum ada counter. Klik 'Tambah Counter' untuk membuat counter
-              baru.
+              Belum ada counter. Klik 'Tambah Counter' untuk membuat counter baru.
             </Card>
           )}
         </>
