@@ -111,3 +111,14 @@ export const apiSkipQueue = async (data: ISkipQueueRequest) => {
     return errorMessage<ISkipQueueResponse>(e);
   }
 };
+
+export const apiGetAllQueues = async () => {
+  try {
+    const res = await satellite.get<APIBaseResponse<IQueue[]>>(
+      `${API_BASE_PATH}`
+    );
+    return res.data;
+  } catch (e) {
+    return errorMessage<IQueue[]>(e);
+  }
+};

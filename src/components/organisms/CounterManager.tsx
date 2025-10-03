@@ -9,7 +9,7 @@ import Button from "../atoms/Button";
 import Card from "../atoms/Card";
 import CounterCard from "../molecules/CounterCard";
 import CounterForm from "../molecules/CounterForm";
-import { useGetAllCounters, useCreateCounter, useUpdateCounter, useDeleteCounter } from "@/services/counter/wrapper.service";
+import { useGetAllCountersWithInactive, useCreateCounter, useUpdateCounter, useDeleteCounter } from "@/services/counter/wrapper.service";
 
 interface CounterManagerProps {
   className?: string;
@@ -24,14 +24,12 @@ const CounterManager: React.FC<CounterManagerProps> = ({ className }) => {
     data: counterResponse,
     isLoading,
     refetch: refetchCounter,
-  } = useGetAllCounters();
+  } = useGetAllCountersWithInactive();
 
-  // Tambahkan mutation hooks
   const createCounterMutation = useCreateCounter();
   const updateCounterMutation = useUpdateCounter();
   const deleteCounterMutation = useDeleteCounter();
 
-  // Akses data counters dari response API
   const counters = counterResponse?.data || [];
 
   const handleSubmit = async (
@@ -39,24 +37,20 @@ const CounterManager: React.FC<CounterManagerProps> = ({ className }) => {
   ) => {
     try {
       if (editingCounter) {
-        // Update counter yang sudah ada
         await updateCounterMutation.mutateAsync({
           id: editingCounter.id,
           ...data
         });
       } else {
-        // Buat counter baru
         await createCounterMutation.mutateAsync(data as ICreateCounterRequest);
       }
 
-      // Reset state dan refresh data
       setIsAddingCounter(false);
       setEditingCounter(null);
       setSelectedCounter(null);
-      refetchCounter(); // Refresh data dari server
+      refetchCounter(); 
     } catch (error) {
       console.error("Error submitting counter:", error);
-      // Di sini Anda bisa menambahkan notifikasi error ke user
     }
   };
 
@@ -77,7 +71,7 @@ const CounterManager: React.FC<CounterManagerProps> = ({ className }) => {
         try {
           await deleteCounterMutation.mutateAsync(selectedCounter.id);
           setSelectedCounter(null);
-          refetchCounter(); // Refresh data setelah delete
+          refetchCounter(); 
         } catch (error) {
           console.error("Error deleting counter:", error);
         }

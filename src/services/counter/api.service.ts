@@ -14,16 +14,26 @@ import { RedirectType } from "next/navigation";
 
 const API_BASE_PATH = "/api/v1/counters";
 
-export const apiGetAllCounters = async () => {
+export const apiGetAllCounters = async (include_inactive: boolean = false) => {
     try {
+        const params: any = { include_inactive };
+        
         const res = await satellite.get<APIBaseResponse<ICounter[]>>(
             `${API_BASE_PATH}/`,
-
+            { params }
         );
         return res.data;
     } catch (error) {
         return errorMessage<ICounter[]>(error);
     }
+};
+
+export const apiGetActiveCounters = async () => {
+    return apiGetAllCounters(false);
+};
+
+export const apiGetAllCountersWithInactive = async () => {
+    return apiGetAllCounters(true);
 };
 
 export const apiGetCounterById = async (id:number) => {
@@ -73,3 +83,4 @@ export const apiDeleteCounter = async (id:number) => {
         return errorMessage<{ success: boolean }>(error);
     }
 };
+

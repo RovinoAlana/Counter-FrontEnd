@@ -4,7 +4,8 @@ import {
     apiCreateCounter,
     apiDeleteCounter,
     apiGetCounterById,
-    apiGetAllCounters,
+    apiGetActiveCounters,
+    apiGetAllCountersWithInactive,
     apiUpdateCounter
 } from "./api.service";
 import {
@@ -15,13 +16,24 @@ import toast from "react-hot-toast";
 
 const AUTH_KEYS = {
   all: ["counters"] as const,
+  active: ["counters", "active"] as const,
+  allWithInactive: ["counters", "all"] as const,
   byId: (id: number) => ["counters", id] as const,
 };
 
-export const useGetAllCounters = () => {
+export const useGetActiveCounters = () => {
     return useQuery({
-        queryKey: [AUTH_KEYS.all],
-        queryFn: () => apiGetAllCounters(),
+        queryKey: AUTH_KEYS.active,
+        queryFn: () => apiGetActiveCounters(),
+        refetchOnWindowFocus: false,
+        refetchInterval: 30000,
+    })
+}
+
+export const useGetAllCountersWithInactive = () => {
+    return useQuery({
+        queryKey: AUTH_KEYS.allWithInactive,
+        queryFn: () => apiGetAllCountersWithInactive(),
         refetchOnWindowFocus: false,
     })
 }

@@ -16,6 +16,7 @@ import {
   apiResetQueues,
   apiSearchQueue,
   apiSkipQueue,
+  apiGetAllQueues,
 } from "./api.service";
 
 const QUEUE_KEYS = {
@@ -23,6 +24,7 @@ const QUEUE_KEYS = {
   current: ["queues", "current"] as const,
   metrics: ["queues", "metrics"] as const,
   search: (query: string) => ["queues", "search", query] as const,
+  allQueues: ["queues", "all"] as const,
 };
 
 export const useGetMetrics = () => {
@@ -45,6 +47,15 @@ export const useSearchQueue = (query: string) => {
   return useQuery({
     queryKey: QUEUE_KEYS.search(query),
     queryFn: () => apiSearchQueue(query),
+    refetchInterval: 30000,
+    refetchOnWindowFocus: false,
+  });
+};
+
+export const useGetAllQueues = () => {
+  return useQuery({
+    queryKey: QUEUE_KEYS.allQueues,
+    queryFn: () => apiGetAllQueues(),
     refetchInterval: 30000,
     refetchOnWindowFocus: false,
   });
@@ -85,23 +96,70 @@ export const useReleaseQueue = () => {
       const toastId = toast.loading("Memproses permintaan...", {
         duration: 5000,
       });
-      if (response && response.error) {
-        toast.error(response.error.message || "Failed to release queue", {
+      
+      console.log("Release queue full response:", response);
+      
+      // Handle response yang kosong
+      if (!response) {
+        console.error("Empty response from server");
+        toast.error("Tidak ada response dari server", { id: toastId });
+        return;
+      }
+
+      // Handle error field
+      if (response.error) {
+        console.error("Response error:", response.error);
+        toast.error(response.error.message || "Gagal melepaskan antrian", {
           id: toastId,
         });
         return;
       }
 
-      if (response && response.status === true) {
-        toast.success("Nomor antrian berhasil dilepaskan", { id: toastId });
+      // Handle response berdasarkan type yang benar
+      if (response.status === true) {
+        // Cek data.success jika ada
+        if (response.data && 'success' in response.data) {
+          if (response.data.success === true) {
+            toast.success("Nomor antrian berhasil dilepaskan", { id: toastId });
+          } else {
+            toast.error("Gagal melepaskan antrian", { id: toastId });
+          }
+        } else {
+          // Jika tidak ada data.success, anggap berhasil karena status true
+          toast.success("Nomor antrian berhasil dilepaskan", { id: toastId });
+        }
       } else {
-        toast.error(response?.message || "Failed to release queue", {
-          id: toastId,
+        // Debug detail response
+        console.error("Release queue failed - response structure:", {
+          response,
+          status: response.status,
+          data: response.data,
+          message: response.message
         });
+        
+        toast.error(
+          response?.message || 
+          "Gagal melepaskan antrian", 
+          { id: toastId }
+        );
       }
     },
-    onError: (error) => {
-      toast.error(error?.message || "Failed to release queue");
+    onError: (error: any) => {
+      console.error("Release queue mutation error details:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        code: error.code,
+        config: error.config
+      });
+      
+      const errorMessage = 
+        error?.response?.data?.message || 
+        error?.response?.data?.error || 
+        error?.message || 
+        "Gagal melepaskan antrian";
+        
+      toast.error(errorMessage);
     },
   });
 };
